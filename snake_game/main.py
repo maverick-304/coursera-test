@@ -46,17 +46,12 @@ class Snake:
         x, y = self.direction
         new = (((cur[0] + x) % GRID_WIDTH), (cur[1] + y) % GRID_HEIGHT)
         if len(self.positions) > 2 and new in self.positions[2:]:
-            self.reset()
+            return False
         else:
             self.positions.insert(0, new)
             if len(self.positions) > self.length:
                 self.positions.pop()
-
-    def reset(self):
-        self.length = 1
-        self.positions = [((GRID_WIDTH // 2), (GRID_HEIGHT // 2))]
-        self.direction = random.choice([(0, -1), (0, 1), (-1, 0), (1, 0)])
-        self.score = 0
+        return True
 
     def draw(self, surface):
         for p in self.positions:
@@ -67,8 +62,7 @@ class Snake:
     def handle_keys(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+                return False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     self.turn((0, -1))
@@ -78,6 +72,7 @@ class Snake:
                     self.turn((-1, 0))
                 elif event.key == pygame.K_RIGHT:
                     self.turn((1, 0))
+        return True
 
 class Food:
     def __init__(self):
@@ -100,8 +95,10 @@ def main():
 
     running = True
     while running:
-        snake.handle_keys()
-        snake.move()
+        if not snake.handle_keys():
+            running = False
+        if not snake.move():
+            running = False
 
         if snake.get_head_position() == food.position:
             snake.length += 1
